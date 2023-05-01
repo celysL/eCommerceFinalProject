@@ -164,6 +164,7 @@ function checkout($customer_id, $billing_address, $shipping_address) : bool {
         return false;
     }
     
+    
     // Clear the cookie
     setcookie('shopping_cart', '', time() - 3600, "/");
     
