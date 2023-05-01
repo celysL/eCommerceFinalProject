@@ -21,6 +21,7 @@ class ShoppingCart {
     private ?int $id;
     private string $status;
     private int $quantity;
+   
     
     public function __construct(string $status, int $quantity, ?int $id = null) {
         $this->id = $id;
@@ -61,43 +62,6 @@ class ShoppingCart {
      */
     public function setQuantity(int $quantity) : void {
         $this->quantity = $quantity;
-    }
-    
-    /**
-     * @return void
-     *
-     * @author Ying-Shan Liang
-     * @since  2023-04-30
-     */
-    public function storeProduct() : void {
-    
-    }
-    
-    /**
-     * @return void
-     *
-     * @author Ying-Shan Liang
-     * @since  2023-04-30
-     */
-    public function removeItem() : void {
-    
-    }
-    
-    /**
-     * @param $quantity
-     *
-     * @return void
-     *
-     * @author Ying-Shan Liang
-     * @since  2023-04-30
-     */
-    public function updateQuantity($quantity) : void {
-        foreach ($_SESSION['cart'] as $key => $value){
-            if($value['id'] == $this->product['id']){
-                $_SESSION['cart'][$key]['quantity'] = $quantity;
-            }
-            
-        }
     }
     
 }

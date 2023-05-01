@@ -50,7 +50,7 @@ $products = getProducts();
     </script>
 </head>
 <body>
-<h1>Product List</h1>
+<h1>All jewelry</h1>
 <div class="product-list">
     <?php foreach ($products as $product): ?>
         <div class="product-item">

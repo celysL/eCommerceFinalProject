@@ -97,6 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <!--        <input type="text" id="shipping_address" name="shipping_address" required><br>-->
 <!--        <input type="submit" value="Complete Checkout">-->
 <!--</form>-->
+
 <form id="checkoutForm">
     <label for="customer_email">Customer Email:</label>
     <input type="email" id="customer_email" name="customer_email" required><br>
