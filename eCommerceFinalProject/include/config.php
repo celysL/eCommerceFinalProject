@@ -69,7 +69,4 @@ $psr4_autoloader = function(string $class) : bool {
     return false;
 };
 
-//mysqli connection
-$conn = mysqli_connect('localhost', 'root', '', 'commerce_final_project') or die('connection failed');
-$conn->query("SET @@auto_increment_increment=1");
 ?>
