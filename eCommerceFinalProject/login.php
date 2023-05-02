@@ -8,18 +8,20 @@ declare(strict_types=1);
  * @since 2023-04-29
  * (c) Copyright 2023 Ying-Shan Liang 
  */
-
+include 'include/config.php';
 use classes\UserLogin;
 
-include 'include/config.php';
+//include 'include/config.php';
+
 include 'classes/UserLogin.php';
+
 session_start();
 
 if(isset($_POST['submit'])) {
     $name = $_POST['name'];
     $password = $_POST['password'];
     
-    $user = new UserLogin($name, $password, $pdo);
+    $user = new UserLogin($name, $password);
     
     if ($user->authenticateUser()) {
         header('Location: index.php');

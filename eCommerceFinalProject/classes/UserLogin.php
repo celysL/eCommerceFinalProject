@@ -28,16 +28,16 @@ class UserLogin {
     
     private string $name;
     private string $password;
-    private PDO $pdo;
+//    private PDO $pdo;
     
     /**
      * @param $name
      * @param $password
      */
-    public function __construct($name, $password, $pdo) {
+    public function __construct($name, $password) {
         $this->name = $name;
         $this->password = md5($password);
-        $this->pdo = $pdo;
+//        $this->pdo = $pdo;
     }
     
     /**
@@ -67,19 +67,33 @@ class UserLogin {
 //        else {
 //            return false;
 //        }
-        try{
-            $db = $this->pdo->prepare("select * from customer where username =:username");
-            $db->bindParam(':username', $this->name);
-            $db->execute();
+            $pdo = getPdoConnection();
+            $sql = "select * from customer where username =:username";
+            $db = $pdo->prepare($sql);
+            $db->execute([':username' =>$this->name]);
+            $user = $db->fetch(PDO::FETCH_ASSOC);
             
-            if($db->rowCount()>0){
-                $row = $db->fetch(PDO::FETCH_ASSOC);
-                
+            if($user && (count($user) > 0)){
+                //Hashed password verification
+                if(md5($this->password) == $user['password']){
+                    //Setting the session's variables
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['user_name'] = $user['username'];
+                    
+                    //setting cookies for remember me
+                    if(isset($_POST['remember_me'])){
+                        setcookie('user_name', $this->name, time() + (86400 * 30), '/');
+                        setcookie('user_pass', $this->name, time() + (86400 * 30), '/');
+                    }elseif(isset($_COOKIE['user_name'])){
+                        setcookie('user_name', '', time() - 3600, '/');
+                    }
+                    if(isset($_COOKIE['user_pass'])){
+                        setcookie('user_pass', '', time()-3600, '/');
+                    }
+                }
+                return true;
             }
+            return false;
+            
         }
-        catch{
-        
-        }
-    }
-    
 }
