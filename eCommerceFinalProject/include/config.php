@@ -9,6 +9,13 @@ declare(strict_types=1);
  * (c) Copyright 2023 Ying-Shan Liang 
  */
 
+// début de session tout le temps
+// Session dure 24h
+ini_set('session.gc_maxlifetime', 3600 * 24);
+session_set_cookie_params(3600 * 24);
+session_start();
+$_SESSION["lastRequestDateTime"] = new DateTime();
+
 //configurations to the database
 $db_host = 'localhost';
 $db_user = 'root';

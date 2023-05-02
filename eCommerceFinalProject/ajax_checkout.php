@@ -8,7 +8,7 @@ declare(strict_types=1);
  * @since 2023-04-29
  * (c) Copyright 2023 Ying-Shan Liang 
  */
-session_start();
+require_once "include/config.php";
 require_once 'functions.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {

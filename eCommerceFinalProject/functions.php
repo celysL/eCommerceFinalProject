@@ -26,19 +26,39 @@ require_once 'classes/ShoppingCartProduct.php';
  * @author Ying-Shan Liang
  * @since  2023-04-29
  */
-/**
- * @return array
- *
- * @author Ying-Shan Liang
- * @since  2023-04-29
- */
 function getProducts() : array {
+    
+    $sql = "SELECT * FROM Product;";
+    $connection = getPdoConnection();
+    $statement = $connection->prepare($sql);
+    $statement->execute();
+    $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+    $products = [];
+    
+    if (count($result) > 0) {
+        foreach ($result as $product_array) {
+            $product = new Product();
+            $product->setId($product_array["id"]);
+            $product->setDescription($product_array["description"]);
+            $product->setImageUrl($product_array["image_url"]);
+            $product->setUnitPrice((float) $product_array["unit_price"]);
+            $product->setAvailableQuantity((int)$product_array["available_quantity"]);
+            $product->setDateCreated($product_array["date_created"]);
+    
+            $products[] = $product;
+        }
+    }
+    
+    return $products;
+
+    /*
+    
     global $conn;
 
     $sql = "select * from Product";
     $result = $conn->query($sql);
     $products = [];
-
+    
     if ($result->num_rows > 0) {
         while($row = $result->fetch_assoc()) {
             $product = new Product();
@@ -52,8 +72,11 @@ function getProducts() : array {
             $products[] = $product;
         }
     }
-
+    
     return $products;
+    
+    */
+
 }
 
 /**
@@ -61,12 +84,29 @@ function getProducts() : array {
  *
  * @return int|null
  *
+ * @throws Exception
  * @author Ying-Shan Liang
  * @since  2023-04-30
  */
 function getCustomerIdByEmail(string $email): ?int {
-    global $conn;
     
+    $sql = "SELECT id FROM Customer WHERE email = :email ;";
+    $connection = getPdoConnection();
+    $statement = $connection->prepare($sql);
+    $statement->bindValue(":email", $email);
+    $statement->execute();
+    $results = $statement->fetchAll(PDO::FETCH_ASSOC);
+    if (count($results) > 1) {
+        throw new Exception("Erreur d'intégrité de base de donnée: plusieurs customers avec le même courriel. Impossible de récupérer un Id.");
+    } elseif (count($results) == 1) {
+        return (int)$results[0]['id'];
+    } else {
+        return null;
+    }
+    
+    
+    /*
+    global $conn;
     $sql = "select id from Customer where email = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param('s', $email);
@@ -79,6 +119,7 @@ function getCustomerIdByEmail(string $email): ?int {
     }
     
     return null;
+    */
 }
 
 
@@ -94,9 +135,13 @@ function getCustomerIdByEmail(string $email): ?int {
 function addToCart($product_id, $quantity) : void {
     $cart_items = [];
     
-    if (isset($_COOKIE['shopping_cart'])) {
-        $cart_items = json_decode($_COOKIE['shopping_cart'], true);
+    if (isset($_SESSION['shopping_cart'])) {
+        $cart_items = $_SESSION['shopping_cart'];
     }
+    
+//    if (isset($_COOKIE['shopping_cart'])) {
+//        $cart_items = json_decode($_COOKIE['shopping_cart'], true);
+//    }
     
     if (isset($cart_items[$product_id])) {
         $cart_items[$product_id] += $quantity;
@@ -104,7 +149,9 @@ function addToCart($product_id, $quantity) : void {
         $cart_items[$product_id] = $quantity;
     }
     
-    setcookie('shopping_cart', json_encode($cart_items), time() + (86400 * 30), "/");
+    $_SESSION['shopping_cart'] = $cart_items;
+//    setcookie('shopping_cart', json_encode($cart_items), time() + (86400 * 30), "/");
+
 }
 
 /**
@@ -120,53 +167,105 @@ function addToCart($product_id, $quantity) : void {
 function checkout($customer_id, $billing_address, $shipping_address) : bool {
     global $conn;
     
-    if (!isset($_COOKIE['shopping_cart'])) {
+    if (!isset($_SESSION['shopping_cart'])) {
         return false;
     }
     
-    $cart_items = json_decode($_COOKIE['shopping_cart'], true);
+//    if (!isset($_COOKIE['shopping_cart'])) {
+//        return false;
+//    }
+//
+//    $cart_items = json_decode($_COOKIE['shopping_cart'], true);
     
     // Create a new shopping cart entry
-    $cart_id = $conn->insert_id;
+//    $new_cart = new ShoppingCart('completed', 0);
+//    $sql = "insert into `shopping cart` (status, quantity) values ('{$new_cart->getStatus()}', '{$new_cart->getQuantity()}')";
+//    //echo "SQL: {$sql}<br>";
+//    if ($conn->query($sql) !== true) {
+//        return false;
+//    }
+//    $cart_id = $conn->insert_id;
+//    $total_quantity = 0;
+
     $new_cart = new ShoppingCart('completed', 0);
-    $sql = "insert into `shopping cart` (status, quantity) values ('{$new_cart->getStatus()}', '{$new_cart->getQuantity()}')";
-    //echo "SQL: {$sql}<br>";
-    if ($conn->query($sql) !== true) {
-        return false;
-    }
+    $sql = "INSERT INTO `shopping cart` (status, quantity) VALUES (:status, :quantity);";
+    $connection = getPdoConnection();
+    $connection->setAttribute(PDO::ATTR_AUTOCOMMIT, false);
+    $connection->beginTransaction();
+    try {
     
-    $cart_id = $conn->insert_id;
-    $total_quantity = 0;
+        $statement = $connection->prepare($sql);
+        $statement->bindValue(":status", $new_cart->getStatus());
+        $statement->bindValue(":quantity", $new_cart->getQuantity(), PDO::PARAM_INT);
+        $statement->execute();
+        $cart_id = (int) $connection->lastInsertId();
     
-    // Add products to the shoppingcartproduct table
-    foreach ($cart_items as $product_id => $quantity) {
-        $total_quantity += $quantity;
-        $cart_product = new ShoppingCartProduct($cart_id, $product_id, (int)$quantity);
-        $sql = "insert into shoppingcartproduct (shopping_cart_id, product_id, quantity) values (NULL, '{$cart_product->getProductId()}', '{$cart_product->getQuantity()}')";
-        if ($conn->query($sql) !== true) {
-            return false;
+    
+        $cart_items = $_SESSION['shopping_cart'];
+        $total_quantity = 0;
+    
+        // Add products to the shoppingcartproduct table
+        $sql = "INSERT INTO shoppingcartproduct (shopping_cart_id, product_id, quantity) VALUES (:cartId, :productId, :quantity);";
+        $statement = $connection->prepare($sql);
+        foreach ($cart_items as $product_id => $quantity) {
+            $total_quantity += $quantity;
+            $cart_product = new ShoppingCartProduct($cart_id, (int)$product_id, (int)$quantity);
+        
+            $statement->bindValue(":cartId", $cart_id, PDO::PARAM_INT);
+            $statement->bindValue(":productId", (int)$product_id, PDO::PARAM_INT);
+            $statement->bindValue(":quantity", (int)$quantity, PDO::PARAM_INT);
+            $statement->execute();
+
+//        $sql = "insert into shoppingcartproduct (shopping_cart_id, product_id, quantity) values (NULL, '{$cart_product->getProductId()}', '{$cart_product->getQuantity()}')";
+//        if ($conn->query($sql) !== true) {
+//            return false;
+//        }
         }
-    }
     
-    // Update the shopping cart quantity
-    $new_cart->setQuantity($total_quantity);
-    $sql = "update `shopping cart` set quantity = '{$new_cart->getQuantity()}' where id = '$cart_id'";
-    if ($conn->query($sql) !== true) {
+        // Update the shopping cart quantity
+        $new_cart->setQuantity($total_quantity);
+        $sql = "UPDATE `shopping cart` SET quantity = :quantity where id = :id ;";
+        $statement = $connection->prepare($sql);
+        $statement->bindValue(":quantity", $new_cart->getQuantity(), PDO::PARAM_INT);
+        $statement->bindValue(":id", $cart_id, PDO::PARAM_INT);
+//    $sql = "update `shopping cart` set quantity = '{$new_cart->getQuantity()}' where id = '$cart_id'";
+//    if ($conn->query($sql) !== true) {
+//        return false;
+//    }
+    
+    
+        // Create a new order entry
+        $date_created = date("Y-m-d H:i:s");
+        $date_placed = date("Y-m-d H:i:s");
+        $new_order = new Order($conn->insert_id, 'pending', (int)$customer_id, $cart_id, $billing_address, $shipping_address, $date_created, $date_placed, null);
+        
+        $sql = "INSERT INTO `order` (status, customer_id, shopping_cart_id, billing_address, shipping_address, date_created) VALUES (:status, :customerId, :cartId, :billAddr, :shipAddr, :dateCreated);";
+        $statement = $connection->prepare($sql);
+        $statement->bindValue(":status", $new_order->getStatus());
+        $statement->bindValue(":customerId", $new_order->getCustomerId(), PDO::PARAM_INT);
+        $statement->bindValue(":cartId", $new_order->getShoppingCartId(), PDO::PARAM_INT);
+        $statement->bindValue(":billAddr", $new_order->getBillingAddress());
+        $statement->bindValue(":shipAddr", $new_order->getShippingAddress());
+        $statement->bindValue(":dateCreated", $new_order->getDateCreated());
+        $statement->execute();
+        
+//        $sql = "insert into `order` (status, customer_id, shopping_cart_id, billing_address, shipping_address, date_created) values ('{$new_order->getStatus()}', '{$new_order->getCustomerId()}', '{$new_order->getShoppingCartId()}', '{$new_order->getBillingAddress()}', '{$new_order->getShippingAddress()}', '{$new_order->getDateCreated()}')";
+//        if ($conn->query($sql) !== true) {
+//            return false;
+//        }
+    
+        $connection->commit();
+    
+        // clear the session
+        $_SESSION['shopping_cart'] = null;
+    
+        // Clear the cookie
+//    setcookie('shopping_cart', '', time() - 3600, "/");
+    
+    
+    } catch (Throwable $thrown) {
+        $connection->rollBack();
         return false;
     }
-    
-    // Create a new order entry
-    $date_created = date("Y-m-d H:i:s");
-    $date_placed = date("Y-m-d H:i:s");
-    $new_order = new Order($conn->insert_id, 'pending', (int)$customer_id, $cart_id, $billing_address, $shipping_address, $date_created, $date_placed, null);
-    $sql = "insert into `order` (status, customer_id, shopping_cart_id, billing_address, shipping_address, date_created) values ('{$new_order->getStatus()}', '{$new_order->getCustomerId()}', '{$new_order->getShoppingCartId()}', '{$new_order->getBillingAddress()}', '{$new_order->getShippingAddress()}', '{$new_order->getDateCreated()}')";
-    if ($conn->query($sql) !== true) {
-        return false;
-    }
-    
-    
-    // Clear the cookie
-    setcookie('shopping_cart', '', time() - 3600, "/");
-    
     return true;
 }
