@@ -19,7 +19,7 @@ if(isset($_POST['submit'])) {
     $name = $_POST['name'];
     $password = $_POST['password'];
     
-    $user = new UserLogin($name, $password);
+    $user = new UserLogin($name, $password, $pdo);
     
     if ($user->authenticateUser()) {
         header('Location: index.php');
@@ -50,8 +50,8 @@ if(isset($_POST['submit'])) {
 if(isset($message)){
     // TODO: Changez le nom de la 2e variable dans le foreach
     // sinon ca va causer des bugs: foreach ($message as $unMessage) { ...
-    foreach ($message as $message){
-        echo '<div class="message" onclick="this.remove();">'.$message.'</div>';
+    foreach ($message as $mess){
+        echo '<div class="message" onclick="this.remove();">'.$mess.'</div>';
     }
 }
 

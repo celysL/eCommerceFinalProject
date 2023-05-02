@@ -14,7 +14,7 @@ namespace classes;
 // TODO: le chemin d'inclusion doit se faire à partir du dossier du fichier en cours
 // ici on est dans /classes. /classes/include/config.php n'existe pas
 // essayez ceci: include "..".DIRECTORY_SEPARATOR."include/config.php";
-include 'include/config.php';
+include "..".DIRECTORY_SEPARATOR."include/config.php";
 
 /**
  * @TODO   Documentation

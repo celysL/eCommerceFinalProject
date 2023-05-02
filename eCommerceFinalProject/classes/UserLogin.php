@@ -14,8 +14,10 @@ namespace classes;
 // TODO: le chemin d'inclusion doit se faire à partir du dossier du fichier en cours
 // ici on est dans /classes. /classes/include/config.php n'existe pas
 // essayez ceci: include "..".DIRECTORY_SEPARATOR."include/config.php";
-include "include/config.php";
+//include 'include/config.php';
+use PDO;
 
+include "..".DIRECTORY_SEPARATOR."include/config.php";
 /**
  * @TODO   Documentation
  *
@@ -26,14 +28,16 @@ class UserLogin {
     
     private string $name;
     private string $password;
+    private PDO $pdo;
     
     /**
      * @param $name
      * @param $password
      */
-    public function __construct($name, $password) {
+    public function __construct($name, $password, $pdo) {
         $this->name = $name;
         $this->password = md5($password);
+        $this->pdo = $pdo;
     }
     
     /**
@@ -43,25 +47,38 @@ class UserLogin {
      * @since  2023-04-29
      */
     public function authenticateUser() {
-        global $conn;
-        
-        $name = mysqli_real_escape_string($conn, $this->name);
-        $password = mysqli_real_escape_string($conn, $this->password);
-        
-        $select = mysqli_query($conn, "select * from `customer` where username = '$name' and password = '$password'") or die('Query failed');
-        
-        if(mysqli_num_rows($select) > 0) {
-            $row = mysqli_fetch_assoc($select);
-            $_SESSION['user_id'] = $row['id'];
+//        global $conn;
+//
+//        $name = mysqli_real_escape_string($conn, $this->name);
+//        $password = mysqli_real_escape_string($conn, $this->password);
+//
+//        $select = mysqli_query($conn, "select * from `customer` where username = '$name' and password = '$password'") or die('Query failed');
+//
+//        if(mysqli_num_rows($select) > 0) {
+//            $row = mysqli_fetch_assoc($select);
+//            $_SESSION['user_id'] = $row['id'];
+//
+//            // Set cookies
+//            setcookie('user_name', $name, time() + 60 * 60 * 24 * 30); // 30 days
+//            setcookie('user_pass', $password, time() + 60 * 60 * 24 * 30); // 30 days
+//
+//            return true;
+//        }
+//        else {
+//            return false;
+//        }
+        try{
+            $db = $this->pdo->prepare("select * from customer where username =:username");
+            $db->bindParam(':username', $this->name);
+            $db->execute();
             
-            // Set cookies
-            setcookie('user_name', $name, time() + 60 * 60 * 24 * 30); // 30 days
-            setcookie('user_pass', $password, time() + 60 * 60 * 24 * 30); // 30 days
-            
-            return true;
+            if($db->rowCount()>0){
+                $row = $db->fetch(PDO::FETCH_ASSOC);
+                
+            }
         }
-        else {
-            return false;
+        catch{
+        
         }
     }
     
