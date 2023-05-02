@@ -19,7 +19,7 @@ namespace classes;
  */
 class Product {
     
-    public ?string $id;
+    public ?int $id;
     public string $description;
     public string $image_url;
     public ?float $unit_price;
@@ -38,14 +38,14 @@ class Product {
     /**
      * @return int
      */
-    public function getId() : string {
+    public function getId() : int {
         return $this->id;
     }
     
     /**
      * @param int $id
      */
-    public function setId(string $id) : void {
+    public function setId(int $id) : void {
         $this->id = $id;
     }
     

@@ -15,9 +15,10 @@ namespace classes;
 // ici on est dans /classes. /classes/include/config.php n'existe pas
 // essayez ceci: include "..".DIRECTORY_SEPARATOR."include/config.php";
 //include 'include/config.php';
+__DIR__."..".DIRECTORY_SEPARATOR."include".DIRECTORY_SEPARATOR."config.php";
 use PDO;
 
-include "..".DIRECTORY_SEPARATOR."include/config.php";
+//include "..".DIRECTORY_SEPARATOR."include/config.php";
 /**
  * @TODO   Documentation
  *
