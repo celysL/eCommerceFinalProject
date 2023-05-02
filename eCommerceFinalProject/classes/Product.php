@@ -119,8 +119,5 @@ class Product {
         $this->date_created = $date_created;
     }
     
-    
-    
-    
 }
     

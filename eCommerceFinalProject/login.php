@@ -8,6 +8,8 @@ declare(strict_types=1);
  * @since 2023-04-29
  * (c) Copyright 2023 Ying-Shan Liang 
  */
+//session_start();
+
 include 'include/config.php';
 use classes\UserLogin;
 
@@ -22,13 +24,25 @@ if(isset($_POST['submit'])) {
     
     $user = new UserLogin($name, $password);
     
-    if ($user->authenticateUser()) {
+    $login_result = $user->authenticateUser();
+    
+    if($login_result['status']){
+        $_SESSION['user_id'] = $login_result['user_id'];
+        $_SESSION['username'] = $login_result['username'];
+
         header('Location: index.php');
         exit();
     }
-    else {
+    else{
         $message[] = 'Incorrect username or password';
     }
+//    if ($user->authenticateUser()) {
+//        header('Location: index.php');
+//        exit();
+//    }
+//    else {
+//        $message[] = 'Incorrect username or password';
+//    }
 }
 ?>
 

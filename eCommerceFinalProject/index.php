@@ -8,8 +8,9 @@ declare(strict_types=1);
  * @since 2023-04-29
  * (c) Copyright 2023 Ying-Shan Liang 
  */
+//session_start();
 
-use classes\Product;
+//use classes\Product;
 
 require_once 'include/config.php';
 require_once 'functions.php';
@@ -50,6 +51,10 @@ $products = getProducts();
     </script>
 </head>
 <body>
+<?php if(isset($_SESSION['user_id'])):?>
+<h2>Welcome, to DAESAN JEWELRY <?php echo $_SESSION['username']; ?> </h2>
+<?php endif;?>
+
 <h1>All jewelry</h1>
 <div class="product-list">
     <?php foreach ($products as $product): ?>
