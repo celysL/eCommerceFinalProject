@@ -188,12 +188,12 @@ function checkout($customer_id, $billing_address, $shipping_address) : bool {
 //    $total_quantity = 0;
 
     $new_cart = new ShoppingCart('completed', 0);
-    $sql = "INSERT INTO `shopping cart` (status, quantity) VALUES (:status, :quantity);";
+    $sql = "insert into `shopping cart` (status, quantity) values (:status, :quantity);";
     $connection = getPdoConnection();
     $connection->setAttribute(PDO::ATTR_AUTOCOMMIT, false);
     $connection->beginTransaction();
     try {
-    
+        error_log('Creating new shopping cart entry');
         $statement = $connection->prepare($sql);
         $statement->bindValue(":status", $new_cart->getStatus());
         $statement->bindValue(":quantity", $new_cart->getQuantity(), PDO::PARAM_INT);
@@ -203,9 +203,10 @@ function checkout($customer_id, $billing_address, $shipping_address) : bool {
     
         $cart_items = $_SESSION['shopping_cart'];
         $total_quantity = 0;
-    
+        
+        error_log("Error: Adding products to the shoppingcartproduct table");
         // Add products to the shoppingcartproduct table
-        $sql = "INSERT INTO shoppingcartproduct (shopping_cart_id, product_id, quantity) VALUES (:cartId, :productId, :quantity);";
+        $sql = "insert into shoppingcartproduct (shopping_cart_id, product_id, quantity) values (:cartId, :productId, :quantity);";
         $statement = $connection->prepare($sql);
         foreach ($cart_items as $product_id => $quantity) {
             $total_quantity += $quantity;
@@ -221,10 +222,10 @@ function checkout($customer_id, $billing_address, $shipping_address) : bool {
 //            return false;
 //        }
         }
-    
+        error_log("Error: Upadating shopping cart quantity");
         // Update the shopping cart quantity
         $new_cart->setQuantity($total_quantity);
-        $sql = "UPDATE `shopping cart` SET quantity = :quantity where id = :id ;";
+        $sql = "update `shopping cart` set quantity = :quantity where id = :id ;";
         $statement = $connection->prepare($sql);
         $statement->bindValue(":quantity", $new_cart->getQuantity(), PDO::PARAM_INT);
         $statement->bindValue(":id", $cart_id, PDO::PARAM_INT);
@@ -232,14 +233,13 @@ function checkout($customer_id, $billing_address, $shipping_address) : bool {
 //    if ($conn->query($sql) !== true) {
 //        return false;
 //    }
-    
-    
+        error_log("Error: Creating a new order entry");
         // Create a new order entry
         $date_created = date("Y-m-d H:i:s");
         $date_placed = date("Y-m-d H:i:s");
         $new_order = new Order($conn->insert_id, 'pending', (int)$customer_id, $cart_id, $billing_address, $shipping_address, $date_created, $date_placed, null);
         
-        $sql = "INSERT INTO `order` (status, customer_id, shopping_cart_id, billing_address, shipping_address, date_created) VALUES (:status, :customerId, :cartId, :billAddr, :shipAddr, :dateCreated);";
+        $sql = "insert into `order` (status, customer_id, shopping_cart_id, billing_address, shipping_address, date_created) values (:status, :customerId, :cartId, :billAddr, :shipAddr, :dateCreated);";
         $statement = $connection->prepare($sql);
         $statement->bindValue(":status", $new_order->getStatus());
         $statement->bindValue(":customerId", $new_order->getCustomerId(), PDO::PARAM_INT);
@@ -253,7 +253,7 @@ function checkout($customer_id, $billing_address, $shipping_address) : bool {
 //        if ($conn->query($sql) !== true) {
 //            return false;
 //        }
-    
+        error_log("Error: Committing transaction");
         $connection->commit();
     
         // clear the session
@@ -265,6 +265,7 @@ function checkout($customer_id, $billing_address, $shipping_address) : bool {
     
     } catch (Throwable $thrown) {
         $connection->rollBack();
+        error_log('Error during checkout: ' . $thrown->getMessage());
         return false;
     }
     return true;

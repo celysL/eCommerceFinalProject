@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (checkout($customer_id, $billing_address, $shipping_address)) {
         echo "Checkout completed successfully!";
     } else {
-        echo "An error occurred during the checkout process.";
+        echo "An error occurred during the checkout process. Please check the error log for more information.";
     }
 }
 ?>
