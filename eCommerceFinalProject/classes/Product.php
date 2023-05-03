@@ -20,19 +20,36 @@ namespace classes;
 class Product {
     
     public ?int $id;
+    
+    public string $display_name;
     public string $description;
     public string $image_url;
     public ?float $unit_price;
     public ?int $available_quantity;
     public string $date_created;
     
-    public function __construct(int $id = null, string $description = '', string $image_url = '', float $unit_price = 0.0, int $available_quantity = 0, string $date_created = '') {
+    public function __construct(int $id = null, string $display_name = '', string $description = '', string $image_url = '', float $unit_price = 0.0, int $available_quantity = 0, string $date_created = '') {
         $this->id = $id;
+        $this->display_name = $display_name;
         $this->description = $description;
         $this->image_url = $image_url;
         $this->unit_price = $unit_price;
         $this->available_quantity = $available_quantity;
         $this->date_created = $date_created;
+    }
+    
+    /**
+     * @return string
+     */
+    public function getDisplayName() : string {
+        return $this->display_name;
+    }
+    
+    /**
+     * @param string $display_name
+     */
+    public function setDisplayName(string $display_name) : void {
+        $this->display_name = $display_name;
     }
     
     /**
