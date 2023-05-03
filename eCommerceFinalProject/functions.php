@@ -28,7 +28,7 @@ require_once 'classes/ShoppingCartProduct.php';
  */
 function getProducts() : array {
     
-    $sql = "SELECT * FROM Product;";
+    $sql = "select * from Product;";
     $connection = getPdoConnection();
     $statement = $connection->prepare($sql);
     $statement->execute();
@@ -40,7 +40,7 @@ function getProducts() : array {
             $product = new Product();
             $product->setId($product_array["id"]);
             $product->setDisplayName($product_array["display_name"]);
-//            $product->setDescription($product_array["description"]);
+            $product->setDescription($product_array["description"]);
             $product->setImageUrl($product_array["image_url"]);
             $product->setUnitPrice((float) $product_array["unit_price"]);
             $product->setAvailableQuantity((int)$product_array["available_quantity"]);
@@ -122,7 +122,6 @@ function getCustomerIdByEmail(string $email): ?int {
     return null;
     */
 }
-
 
 /**
  * @param $product_id

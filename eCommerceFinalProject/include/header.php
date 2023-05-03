@@ -9,7 +9,7 @@ declare(strict_types=1);
  * (c) Copyright 2023 Ying-Shan Liang 
  */
 ?>
-<link rel="stylesheet" href="/css/header.css">
+<link rel="stylesheet" href="../css/header.css">
     
     <nav class="navbar">
         <a href="#" class="title">DAESAN</a>
@@ -17,8 +17,8 @@ declare(strict_types=1);
         <label for="toggler"><i class="ri-menu-line"></i></label>
         <div class="menu">
             <ul class="list">
-                <li><a href="/index.php">Home</a></li>
-                <li><a href="/cart.php">Cart</a></li>
+                <li><a href="../index.php">Home</a></li>
+                <li><a href="../cart.php">Cart</a></li>
             </ul>
         </div>
     </nav>
