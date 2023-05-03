@@ -60,10 +60,12 @@ $products = getProducts();
     <?php foreach ($products as $product): ?>
         <div class="product-item">
             <img src="<?php echo $product->getImageUrl(); ?>" alt="<?php echo $product->getDescription(); ?>">
-            <h3><?php echo $product->getDescription(); ?></h3>
+<!--            <h3>--><?php //echo $product->getDescription(); ?><!--</h3>-->
+            <h3><?php echo $product->getDisplayName(); ?></h3>
             <p>Price: $<?php echo $product->getUnitPrice(); ?></p>
             <p>Available Quantity: <?php echo $product->getAvailableQuantity(); ?></p>
             <button class="add-to-cart" data-product-id="<?php echo $product->getId(); ?>">Add to Cart</button>
+            <br><br>
         </div>
     <?php endforeach; ?>
 </div>

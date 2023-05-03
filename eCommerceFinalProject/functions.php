@@ -39,7 +39,8 @@ function getProducts() : array {
         foreach ($result as $product_array) {
             $product = new Product();
             $product->setId($product_array["id"]);
-            $product->setDescription($product_array["description"]);
+            $product->setDisplayName($product_array["display_name"]);
+//            $product->setDescription($product_array["description"]);
             $product->setImageUrl($product_array["image_url"]);
             $product->setUnitPrice((float) $product_array["unit_price"]);
             $product->setAvailableQuantity((int)$product_array["available_quantity"]);
@@ -90,7 +91,7 @@ function getProducts() : array {
  */
 function getCustomerIdByEmail(string $email): ?int {
     
-    $sql = "SELECT id FROM Customer WHERE email = :email ;";
+    $sql = "select id from Customer where email = :email ;";
     $connection = getPdoConnection();
     $statement = $connection->prepare($sql);
     $statement->bindValue(":email", $email);
